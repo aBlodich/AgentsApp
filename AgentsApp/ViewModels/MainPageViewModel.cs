@@ -1,13 +1,12 @@
 ﻿using AgentsApp.Commands;
-using AgentsApp.DataBase;
+using AgentsApp.Constants;
+using AgentsApp.Database;
 using AgentsApp.Models;
 using AgentsApp.Views;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using Windows.Storage;
 using Windows.Storage.AccessCache;
@@ -16,48 +15,48 @@ using Windows.UI.Xaml.Media.Imaging;
 
 namespace AgentsApp.ViewModels
 {
+    /// <summary>
+    /// Модель представения главной страницы
+    /// </summary>
     class MainPageViewModel : BaseViewModel
     {
-        public Agent Agent { get; set; }
-        private List<Agent> agents;
+        private AgentModel Agent { get; set; }
+
+        private List<AgentModel> agents;
+        
         public ObservableCollection<MainPageViewModel> AgentsCollection { get; set; }
+        
         public ObservableCollection<MainPageViewModel> InfoCollection { get; set; } = new ObservableCollection<MainPageViewModel>();
 
-        private MainPageViewModel selectedAgent = null;
+        
+        private MainPageViewModel _selectedAgent = null;
         public MainPageViewModel SelectedAgent
         {
-            get => selectedAgent;
+            get => _selectedAgent;
             set
             { 
-                selectedAgent = value;
-                if (selectedAgent != null && !InfoCollection.Contains(selectedAgent))
+                _selectedAgent = value;
+                if (_selectedAgent != null && !InfoCollection.Contains(_selectedAgent))
                 {
                     GetPhoto();
                     InfoCollection.Clear();
-                    InfoCollection.Add(selectedAgent);
+                    InfoCollection.Add(_selectedAgent);
                 }
             }
         }
 
-        private BitmapImage _photo;
-
-        public BitmapImage Photo
+        private async void GetPhoto()
         {
-            get => _photo;
-
-            set
+            BitmapImage bmi = new BitmapImage();
+            SelectedAgent.Photo = bmi;
+            if (SelectedAgent.ImageToken == null)
             {
-                _photo = value;
-                OnPropertyChanged();
+                bmi.UriSource = new Uri(StringConstants.PLACEHOLDERPATH);
+                bmi = new BitmapImage(new Uri(StringConstants.PLACEHOLDERPATH));
+                return;
             }
-        }
-
-        private async void  GetPhoto()
-        {
             StorageFile file = await StorageApplicationPermissions.FutureAccessList.GetFileAsync(SelectedAgent.ImageToken);
             var fileStream = await file.OpenAsync(FileAccessMode.Read);
-            var bmi = new BitmapImage();
-            SelectedAgent.Photo = bmi;
             await bmi.SetSourceAsync(fileStream);
             fileStream.Dispose();
         }
@@ -72,24 +71,33 @@ namespace AgentsApp.ViewModels
             get => new DelegateCommand(NavigateToEditPage);
         }
 
+        public ICommand DeleteAgent
+        {
+            get => new DelegateCommand(OnDeleteAgent);
+        }
+
+        private void OnDeleteAgent()
+        {
+            var agent = SelectedAgent;
+            if (agent == null)
+                return;
+            InfoCollection.Clear();
+            Photo = null;
+            using (var db = new AgentContext())
+            {
+                db.Remove(agent.Agent);
+                AgentsCollection.Remove(AgentsCollection.Where(c => c.Agent.Id == agent.Agent.Id).Single());
+                db.SaveChanges();
+            }
+        }
         public void NavigateToAddPage()
         {
             Navigation.Navigate(typeof(AddOrEditAgentPage), null, new DrillInNavigationTransitionInfo());
         }
 
-
-        public void OnAgentsListItem_Clicked()
-        {
-            if (SelectedAgent == null) return;
-            //SelectedAgent = SelectedAgent.Agent;
-            //InfoCollection = new ObservableCollection<MainPageViewModel>();
-            //InfoCollection.Add(new MainPageViewModel(info));
-
-        }
-
         public void NavigateToEditPage()
         {
-            int agentId = ((MainPageViewModel)SelectedAgent).Agent.Id;
+            int agentId = SelectedAgent.Agent.Id;
             Navigation.Navigate(typeof(AddOrEditAgentPage), agentId, new DrillInNavigationTransitionInfo());
         }
 
@@ -105,17 +113,26 @@ namespace AgentsApp.ViewModels
 
         }
 
-        public MainPageViewModel(Agent agent)
+        public MainPageViewModel(AgentModel agent)
         {
             this.Agent = agent;
         }
 
+        private BitmapImage _photo;
+        public BitmapImage Photo
+        {
+            get => _photo;
+
+            set
+            {
+                _photo = value;
+                OnPropertyChanged();
+            }
+        }
+
         public string Name
         {
-            get
-            {
-                return Agent.Name;
-            }
+            get => Agent.Name;
             set
             {
                 Agent.Name = value;
@@ -126,10 +143,7 @@ namespace AgentsApp.ViewModels
 
         public string ContactNumber
         {
-            get
-            {
-                return Agent.ContactNumber;
-            }
+            get => Agent.ContactNumber;
             set
             {
                 Agent.ContactNumber = value;

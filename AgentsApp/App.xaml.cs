@@ -1,4 +1,4 @@
-﻿using AgentsApp.DataBase;
+﻿using AgentsApp.Database;
 using AgentsApp.Views;
 using Microsoft.EntityFrameworkCore;
 using System;

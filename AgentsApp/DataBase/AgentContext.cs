@@ -1,18 +1,14 @@
 ﻿using AgentsApp.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace AgentsApp.DataBase
+
+namespace AgentsApp.Database
 {
     //База данных агентов
     class AgentContext : DbContext
     {
         //Хранимые в БД агенты
-        public DbSet<Agent> Agents { get; set; }
+        public DbSet<AgentModel> Agents { get; set; }
 
         public AgentContext()
         {

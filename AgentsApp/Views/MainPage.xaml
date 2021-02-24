@@ -18,7 +18,7 @@
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
 
-        <ListView x:Name="AgentsList" ItemsSource="{x:Bind vm.AgentsCollection}" SelectedItem="{x:Bind vm.SelectedAgent, Mode=TwoWay}">
+        <ListView x:Name="AgentsList" ItemsSource="{x:Bind vm.AgentsCollection}" SelectedItem="{x:Bind vm.SelectedAgent, Mode=TwoWay}" Margin="50">
             <ListView.Resources>
                 <SolidColorBrush x:Key="ListViewItemBackgroundSelected" Color="#25fc82" />
                 <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPointerOver" Color="#25fc82" />
@@ -32,24 +32,27 @@
 
 
 
-        <GridView x:Name="InfoView" Grid.Column="1" ItemsSource="{Binding InfoCollection}">
+        <GridView x:Name="InfoView" Grid.Column="1" ItemsSource="{Binding InfoCollection}" Margin="50">
             <GridView.ItemTemplate>
                 <DataTemplate x:DataType="viewModels:MainPageViewModel">
                     <StackPanel>
-                        <TextBlock Text="{Binding Name}"/>
-                        <TextBlock Text="{Binding ContactNumber}"/>
-                        <TextBlock Text="{Binding Email}"/>
+                        <TextBlock Text="{Binding Name}" HorizontalAlignment="Center" FontSize="16"/>
+                        <TextBlock Text="{Binding ContactNumber}" HorizontalAlignment="Center" FontSize="16"/>
+                        <TextBlock Text="{Binding Email}" HorizontalAlignment="Center" FontSize="16"/>
                         <Image Source="{Binding Photo}"/>
                     </StackPanel>
                 </DataTemplate>
             </GridView.ItemTemplate>
         </GridView>
 
+        <TextBlock Text="Агенты" FontSize="24" HorizontalAlignment="Center"/>
+        <TextBlock Text="Информация" Grid.Column="1" FontSize="24" HorizontalAlignment="Center"/>
+
         <Button Command="{x:Bind Path=vm.GoToAddPage}" CommandParameter="{x:Null}" x:Name="AddAgentButton" Grid.Row="1" Content="Добавить агента" HorizontalAlignment="Center" />
 
         <Button Command="{x:Bind Path=vm.GoToEditPage}" CommandParameter="{x:Bind vm.SelectedAgent}" x:Name="EditAgentButton" Grid.Row="1" Grid.Column="1" Content="Редактировать агента" HorizontalAlignment="Left"/>
 
-        <Button x:Name="DeleteAgentButton" Grid.Row="1" Grid.Column="1" Content="Удалить агента" HorizontalAlignment="Right"/>
+        <Button Command="{x:Bind vm.DeleteAgent}" x:Name="DeleteAgentButton" Grid.Row="1" Grid.Column="1" Content="Удалить агента" HorizontalAlignment="Right"/>
 
     </Grid>
 </Page>

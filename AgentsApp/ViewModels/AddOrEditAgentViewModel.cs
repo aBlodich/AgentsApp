@@ -1,17 +1,12 @@
 ﻿using AgentsApp.Commands;
-using AgentsApp.DataBase;
 using AgentsApp.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
-using Windows.Storage;
-using Windows.Storage.AccessCache;
 
 namespace AgentsApp.ViewModels
 {
+    /// <summary>
+    /// Модель представления добавления или редактирования агентво
+    /// </summary>
     class AddOrEditAgentViewModel : BaseViewModel
     {
         public string NameTextBoxText { get; set; } = string.Empty;
@@ -20,7 +15,11 @@ namespace AgentsApp.ViewModels
 
         private string photoNameTextBoxText = "Фотография не выбрана";
 
-        private string token = null;
+        AddOrEditAgentModel addOrEditAgentModel = new AddOrEditAgentModel();
+
+        public AgentModel Agent { get; set; }
+
+        public bool IsEdit { get; set; } = false;
 
         public string PhotoNameTextBoxText
         {
@@ -35,75 +34,25 @@ namespace AgentsApp.ViewModels
             }
         }
 
-        private StorageFile photo;
+        public ICommand SaveButton_Clicked => new DelegateCommand(OnSaveButton_ClickedAsync);
 
-        public Agent Agent { get; set; }
+        public ICommand AddAPhotoButton_Clicked => new DelegateCommand(OpenFile);
 
-        public bool IsEdit { get; set; } = false;
+        public ICommand CancelButton_Clicked => new DelegateCommand(Navigation.GoToMainPage);
 
-        public ICommand SaveButton_Clicked
+        private void OnSaveButton_ClickedAsync()
         {
-            get => new DelegateCommand(OnSaveButton_ClickedAsync);
-        }
-
-        public ICommand AddAPhotoButton_Clicked
-        {
-            get => new DelegateCommand(OpenFile);
-        }
-
-        public ICommand CancelButton_Clicked
-        {
-            get => new DelegateCommand(Navigation.GoToMainPage);
-        }
-
-        public async void OnSaveButton_ClickedAsync()
-        {
-            using (var db = new AgentContext())
-            {
-                if (Agent == null)
-                {
-                    Agent = new Agent()
-                    {
-                        Name = NameTextBoxText,
-                        ContactNumber = ContactNumberTextBoxText,
-                        Email = EmailTextBoxText
-                    };
-                }
-                else
-                {
-                    Agent.Name = NameTextBoxText;
-                    Agent.ContactNumber = ContactNumberTextBoxText;
-                    Agent.Email = EmailTextBoxText;
-                }
-                Agent.ImagePath = photo != null ? photo.Path : null;
-                Agent.ImageToken = token;
-                if (IsEdit)
-                {
-                    db.Update(Agent);
-                }
-                else
-                {
-                    await db.AddAsync(Agent);
-                }
-                db.SaveChanges();
-            }
-            Navigation.GoToMainPage();
+            addOrEditAgentModel.OnSaveButton_ClickedAsync(Agent,NameTextBoxText,ContactNumberTextBoxText,EmailTextBoxText,IsEdit);
         }
 
         private async void OpenFile()
         {
-            var picker = new Windows.Storage.Pickers.FileOpenPicker();
-            picker.ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail;
-            picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary;
-            picker.FileTypeFilter.Add(".jpg");
-            picker.FileTypeFilter.Add(".jpeg");
-            picker.FileTypeFilter.Add(".png");
-            photo = await picker.PickSingleFileAsync();
-            if (photo != null)
+            await addOrEditAgentModel.OpenFile();
+            if (addOrEditAgentModel.PhotoName != null)
             {
-                this.PhotoNameTextBoxText = photo.Name;
-                token = StorageApplicationPermissions.FutureAccessList.Add(photo);
+                PhotoNameTextBoxText = addOrEditAgentModel.PhotoName;
             }
         }
+
     }
 }

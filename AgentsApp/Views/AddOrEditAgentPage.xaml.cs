@@ -1,4 +1,4 @@
-﻿using AgentsApp.DataBase;
+﻿using AgentsApp.Database;
 using AgentsApp.Models;
 using AgentsApp.ViewModels;
 using System;
@@ -37,7 +37,7 @@ namespace AgentsApp.Views
             if (e.Parameter != null)
             {
                 int agentId = (int)e.Parameter;
-                Agent agent = null;
+                AgentModel agent = null;
                 using (var db = new AgentContext())
                 {
                     agent = db.Agents.FirstOrDefault(c => c.Id == agentId);
