@@ -1,0 +1,55 @@
+﻿<Page
+    x:Class="AgentsApp.Views.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:AgentsApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:viewModels="using:AgentsApp.ViewModels"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="190"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+
+        <ListView x:Name="AgentsList" ItemsSource="{x:Bind vm.AgentsCollection}" SelectedItem="{x:Bind vm.SelectedAgent, Mode=TwoWay}">
+            <ListView.Resources>
+                <SolidColorBrush x:Key="ListViewItemBackgroundSelected" Color="#25fc82" />
+                <SolidColorBrush x:Key="ListViewItemBackgroundSelectedPointerOver" Color="#25fc82" />
+            </ListView.Resources>
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="viewModels:MainPageViewModel">
+                    <ListBoxItem Content="{x:Bind Name}"/>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+
+
+        <GridView x:Name="InfoView" Grid.Column="1" ItemsSource="{Binding InfoCollection}">
+            <GridView.ItemTemplate>
+                <DataTemplate x:DataType="viewModels:MainPageViewModel">
+                    <StackPanel>
+                        <TextBlock Text="{Binding Name}"/>
+                        <TextBlock Text="{Binding ContactNumber}"/>
+                        <TextBlock Text="{Binding Email}"/>
+                        <Image Source="{Binding Photo}"/>
+                    </StackPanel>
+                </DataTemplate>
+            </GridView.ItemTemplate>
+        </GridView>
+
+        <Button Command="{x:Bind Path=vm.GoToAddPage}" CommandParameter="{x:Null}" x:Name="AddAgentButton" Grid.Row="1" Content="Добавить агента" HorizontalAlignment="Center" />
+
+        <Button Command="{x:Bind Path=vm.GoToEditPage}" CommandParameter="{x:Bind vm.SelectedAgent}" x:Name="EditAgentButton" Grid.Row="1" Grid.Column="1" Content="Редактировать агента" HorizontalAlignment="Left"/>
+
+        <Button x:Name="DeleteAgentButton" Grid.Row="1" Grid.Column="1" Content="Удалить агента" HorizontalAlignment="Right"/>
+
+    </Grid>
+</Page>
