@@ -8,6 +8,9 @@ using Windows.Storage;
 
 namespace AgentsApp.Commands
 {
+    /// <summary>
+    /// Сервис команд
+    /// </summary>
     class DelegateCommand : ICommand
     {
 

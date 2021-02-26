@@ -124,7 +124,11 @@
     <Compile Include="Constants\StringConstants.cs" />
     <Compile Include="DataBase\AgentContext.cs" />
     <Compile Include="Models\AddOrEditAgentModel.cs" />
+    <Compile Include="DataBase\Agent.cs" />
     <Compile Include="Models\AgentModel.cs" />
+    <Compile Include="Services\Dialogs.cs" />
+    <Compile Include="Services\FileService.cs" />
+    <Compile Include="Services\NotifyTaskCompletion.cs" />
     <Compile Include="ViewModels\AddOrEditAgentViewModel.cs" />
     <Compile Include="ViewModels\BaseViewModel.cs" />
     <Compile Include="ViewModels\MainPageViewModel.cs" />

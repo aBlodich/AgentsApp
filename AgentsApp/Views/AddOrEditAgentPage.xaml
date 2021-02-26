@@ -4,10 +4,14 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:AgentsApp.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:viewmodels="using:AgentsApp.ViewModels"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
+    <!--<Page.DataContext>
+        <viewmodels:AddOrEditAgentViewModel/>
+    </Page.DataContext>-->
+    
     <Grid Margin="50">
         <Grid.RowDefinitions>
             <RowDefinition Height="300"/>
@@ -19,10 +23,12 @@
                 FontSize="30"/>
             <TextBox
                 Text="{Binding NameTextBoxText, Mode=TwoWay}"
+                TextChanged="{x:Bind vm.NameTextBox_TextChanged}"
                 x:Name="NameTextBox"
                 FontSize="24"
                 PlaceholderText="Введите имя"/>
             <TextBox Text="{Binding ContactNumberTextBoxText, Mode=TwoWay}"
+                TextChanged="{x:Bind vm.ContactNumberTextBox_TextChanged}"
                 x:Name="ContactNumberTextBox"
                 FontSize="24"
                 PlaceholderText="Введите телефон"/>

@@ -10,6 +10,9 @@ using Windows.UI.Xaml.Media.Animation;
 
 namespace AgentsApp.Commands
 {
+    /// <summary>
+    /// Сервис навигации по страницам
+    /// </summary>
     class Navigation
     {
         public static void Navigate(Type page, object param, NavigationTransitionInfo info)

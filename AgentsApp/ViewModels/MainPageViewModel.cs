@@ -1,15 +1,12 @@
 ﻿using AgentsApp.Commands;
-using AgentsApp.Constants;
 using AgentsApp.Database;
 using AgentsApp.Models;
+using AgentsApp.Services;
 using AgentsApp.Views;
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
-using Windows.Storage;
-using Windows.Storage.AccessCache;
 using Windows.UI.Xaml.Media.Animation;
 using Windows.UI.Xaml.Media.Imaging;
 
@@ -20,57 +17,92 @@ namespace AgentsApp.ViewModels
     /// </summary>
     class MainPageViewModel : BaseViewModel
     {
-        private AgentModel Agent { get; set; }
-
-        private List<AgentModel> agents;
-        
-        public ObservableCollection<MainPageViewModel> AgentsCollection { get; set; }
-        
-        public ObservableCollection<MainPageViewModel> InfoCollection { get; set; } = new ObservableCollection<MainPageViewModel>();
-
-        
+        private string _name;
+        private string _contactNumber;
+        private string _email;
+        private string _imageToken;
         private MainPageViewModel _selectedAgent = null;
+        private AgentModel _agent { get; set; }
+        private List<AgentModel> _agents;
+        
+        public ObservableCollection<MainPageViewModel> AgentsCollection { get; private set; }
+        
+        public ObservableCollection<MainPageViewModel> InfoCollection { get; private set; } = new ObservableCollection<MainPageViewModel>();
+        
+        public NotifyTaskCompletion<BitmapImage> Photo { get; private set; }
+
+        public string Name
+        {
+            get => _name;
+            set
+            {
+                _name = value;
+                OnPropertyChanged();
+
+            }
+        }
+
+        public string ContactNumber
+        {
+            get => _contactNumber;
+
+            set
+            {
+                _contactNumber = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string ImageToken
+        {
+            get => _imageToken;
+            set => _imageToken = value;
+        }
+
+        public string Email
+        {
+            get => _email;
+            set
+            {
+                _email = value;
+                OnPropertyChanged();
+            }
+        }
+
         public MainPageViewModel SelectedAgent
         {
             get => _selectedAgent;
             set
-            { 
+            {
                 _selectedAgent = value;
                 if (_selectedAgent != null && !InfoCollection.Contains(_selectedAgent))
                 {
-                    GetPhoto();
+                    _selectedAgent.Photo = new NotifyTaskCompletion<BitmapImage>(FileService.GetPhoto(_selectedAgent.ImageToken));
                     InfoCollection.Clear();
                     InfoCollection.Add(_selectedAgent);
                 }
             }
         }
 
-        private async void GetPhoto()
-        {
-            BitmapImage bmi = new BitmapImage();
-            SelectedAgent.Photo = bmi;
-            if (SelectedAgent.ImageToken == null)
-            {
-                bmi.UriSource = new Uri(StringConstants.PLACEHOLDERPATH);
-                bmi = new BitmapImage(new Uri(StringConstants.PLACEHOLDERPATH));
-                return;
-            }
-            StorageFile file = await StorageApplicationPermissions.FutureAccessList.GetFileAsync(SelectedAgent.ImageToken);
-            var fileStream = await file.OpenAsync(FileAccessMode.Read);
-            await bmi.SetSourceAsync(fileStream);
-            fileStream.Dispose();
-        }
-
+        /// <summary>
+        /// Переход к странице добалвения агента
+        /// </summary>
         public ICommand GoToAddPage
         {
             get => new DelegateCommand(NavigateToAddPage);
         }
 
+        /// <summary>
+        /// Переход к странице редактирования агента
+        /// </summary>
         public ICommand GoToEditPage
         {
             get => new DelegateCommand(NavigateToEditPage);
         }
 
+        /// <summary>
+        /// Удаление агента
+        /// </summary>
         public ICommand DeleteAgent
         {
             get => new DelegateCommand(OnDeleteAgent);
@@ -85,11 +117,12 @@ namespace AgentsApp.ViewModels
             Photo = null;
             using (var db = new AgentContext())
             {
-                db.Remove(agent.Agent);
-                AgentsCollection.Remove(AgentsCollection.Where(c => c.Agent.Id == agent.Agent.Id).Single());
+                db.Agents.Remove(agent._agent.ToAgent());
+                AgentsCollection.Remove(AgentsCollection.Where(c => c._agent.Id == agent._agent.Id).Single());
                 db.SaveChanges();
             }
         }
+
         public void NavigateToAddPage()
         {
             Navigation.Navigate(typeof(AddOrEditAgentPage), null, new DrillInNavigationTransitionInfo());
@@ -97,90 +130,32 @@ namespace AgentsApp.ViewModels
 
         public void NavigateToEditPage()
         {
-            int agentId = SelectedAgent.Agent.Id;
+            int agentId = SelectedAgent._agent.Id;
             Navigation.Navigate(typeof(AddOrEditAgentPage), agentId, new DrillInNavigationTransitionInfo());
         }
 
         public MainPageViewModel()
         {
-            using (var db = new AgentContext())
-            {
-                agents = db.Agents.ToList();
-            }
-            agents.Sort();
-
-            AgentsCollection = new ObservableCollection<MainPageViewModel>(agents.Select(c => new MainPageViewModel(c)));
-
+            LoadData();
         }
 
-        public MainPageViewModel(AgentModel agent)
+        public MainPageViewModel(AgentModel agentModel)
         {
-            this.Agent = agent;
+            this.Name = agentModel.Name;
+            this.ContactNumber = agentModel.ContactNumber;
+            this.Email = agentModel.Email;
+            this.ImageToken = agentModel.ImageToken;
+            this._agent = agentModel;
         }
 
-        private BitmapImage _photo;
-        public BitmapImage Photo
+        /// <summary>
+        /// Загрузка данных из базы данных
+        /// </summary>
+        private void LoadData()
         {
-            get => _photo;
-
-            set
-            {
-                _photo = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string Name
-        {
-            get => Agent.Name;
-            set
-            {
-                Agent.Name = value;
-                OnPropertyChanged();
-
-            }
-        }
-
-        public string ContactNumber
-        {
-            get => Agent.ContactNumber;
-            set
-            {
-                Agent.ContactNumber = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string ImageToken
-        {
-            get => Agent.ImageToken;
-            set => Agent.ImageToken = value;
-        }
-
-        public string Email
-        {
-            get
-            {
-                return Agent.Email;
-            }
-            set
-            {
-                Agent.Email = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string ImagePath
-        {
-            get
-            {
-                return Agent.ImagePath;
-            }
-            set
-            {
-                Agent.ImagePath = value;
-                OnPropertyChanged();
-            }
+            _agent = AgentModel.LoadDataFromDataBase();
+            _agents = _agent.AgentModels;
+            AgentsCollection = new ObservableCollection<MainPageViewModel>(_agents.Select(c => new MainPageViewModel(c)));
         }
     }
 }
